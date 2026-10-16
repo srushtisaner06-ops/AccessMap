@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AccessMap AI — "Know before you go."
 
 Sociothon'26 · PS 09 · AI-Powered Accessibility Mapping (frontend MVP, ~50–60% of the envisioned product).
@@ -60,3 +61,7 @@ src/pages/      LandingPage, MapDashboard, ReportForm, AdminDashboard
 ## Map troubleshooting
 - Default basemap: OpenStreetMap standard tiles (no key). To use another provider set `VITE_MAP_TILE_URL` (e.g. a MapTiler/Stadia/self-hosted XYZ URL including its key) in a `.env` file. Do not commit keys.
 - If tiles fail or show an access/"API required" message, click **Use simple map** (remembered); it also switches automatically after repeated tile errors.
+=======
+# AccessMap
+AccessMap AI is an AI-powered accessibility mapping platform that helps people with disabilities find accessible public places using community reports, supporting evidence, trust levels, and real-time conflict detection. Built for Sociothon’26 (PS 09), it promotes inclusive and informed mobility.
+>>>>>>> a817a0086b5e87431404a56a6486a0d4f465f332
