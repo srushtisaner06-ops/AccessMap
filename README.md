@@ -1,8 +1,8 @@
 # AccessMap AI — Know before you go
 
-AccessMap AI is an accessible Pune place-discovery application. It combines a map of sourced real places with user-submitted accessibility reports, feature-level evidence, freshness rules, and conflict detection.
+AccessMap AI is a hackathon demonstration of an accessibility evidence map for Pune. It contains 20 clearly labeled illustrative locations and seeded accessibility reports covering freshness, trust, conflicts, barriers, evidence quality, and moderation workflows.
 
-The place list contains 10 Pune hospitals, cafés, colleges, parks, and public facilities. Place identity and location metadata include a public source link. Accessibility is not inferred from a place listing: new places begin with **Limited information** until a user submits evidence.
+**All locations, reports, timestamps, review decisions, and photos in the seeded dataset are demonstration data. They are not independently verified and do not guarantee current accessibility.** Seed photos are placeholders, not authentic photographs.
 
 ## Run
 
@@ -13,37 +13,45 @@ npm test
 npm run build
 ```
 
-The map uses public OpenStreetMap tiles. If tiles or WebGL are unavailable, the app keeps the place list and switches to a schematic map. The curated place list is cached locally for offline reuse.
+The map uses public OpenStreetMap tiles and includes a keyboard-friendly list and schematic fallback when interactive map tiles or WebGL are unavailable.
 
 ## Demo access
 
 - User: `user@accessmap.demo` / `user123`
 - Admin: `admin@accessmap.demo` / `admin123`
 
-The login is client-side demo authentication only. It is not production security.
+## Demo walkthrough
 
-## User workflow
+1. Log in as the user and open the map. All 20 illustrative Pune locations are available in the list and map.
+2. Use search, category, accessibility-feature, status, and trust filters.
+3. Open **Explore Demo Scenarios** and try:
+   - High trust entrance evidence
+   - Conflicting lift reports
+   - Outdated entrance evidence
+   - Limited accessible-toilet information
+   - Recently fixed entrance barrier
+   - Pending admin review
+4. Open a location to inspect feature-level status, trust explanation, timestamps, report counts, evidence, and history.
+5. Use **Try Conflict Demo** on a suitable lift to add one controlled illustrative contradiction. Repeated clicks are prevented until the demo is reset.
+6. Log in as admin to inspect pending, reviewed, flagged, rejected, and seeded reports. Review actions are stored locally and update the trust engine.
+7. Use **Reset Demo Data** to restore the original 20 locations, 35 seeded reports, review decisions, and scenario states.
 
-1. Log in as a user and open the Accessibility Map.
-2. Search places or areas and filter by category or accessibility feature.
-3. Open a place to view its source, evidence status, feature details, and report history.
-4. Submit a report based on a personal observation. Reports remain unverified community evidence until reviewed.
+## Trust and evidence rules
 
-## Admin workflow
+- `trustEngine.js` is the only source of truth for freshness, trust, status, and conflict calculations.
+- Feature freshness windows differ: lift 30 days, crowd 14 days, noise 45 days, toilet 90 days, wheelchair/parking 120 days, and entrance/signage 180 days.
+- Recent contradictory definite reports produce **Needs Recheck** and remain visible together.
+- Missing or unusable evidence produces **Limited Information**.
+- Photos and descriptions support evidence but do not prove accessibility.
+- Rejected reports remain in history but are excluded from current assessment.
+- Place status and trust remain separate from individual feature statuses.
 
-Admins can filter submissions, inspect evidence, mark reports reviewed, flag them for investigation, reject them with a reason, and view decision history. Admin review records moderation activity; it does not claim an independent physical inspection.
+## Architecture
 
-## Evidence rules
+- `src/lib/mockData.js`: 20 demo places, deterministic seeded reports, reviews, and scenario registry.
+- `src/lib/trustEngine.js`: pure freshness, evidence, trust, and conflict rules.
+- `src/lib/storage.js`: localStorage persistence and schema-safe reset/migration.
+- `src/lib/store.jsx`: report, review, scenario-conflict, reset, and toast actions.
+- Existing React components continue to provide the map, fallback map, details panel, reporting workflow, assistant, and admin review.
 
-- No accessibility claims are seeded into the application.
-- A missing report is shown as **Limited information**.
-- Feature-specific freshness windows mark old information as needing recheck.
-- Contradictory recent reports are marked **Needs Recheck** and both reports remain visible.
-- Photos and descriptions support a report but do not prove accessibility.
-- Rejected reports remain in history but are excluded from trust calculations.
-
-## Structure
-
-`src/lib/mockData.js` contains the curated sourced places. `trustEngine.js` contains pure freshness, evidence, trust, and conflict rules. `storage.js` persists reports and caches places. `store.jsx` is the single consumer-facing state layer.
-
-The application intentionally has no backend, AI model, or production authentication. A future backend can replace the storage seam without changing the map, report, or trust-engine interfaces.
+No backend, additional dependency, or production authentication is used. The login is client-side demo authentication only.

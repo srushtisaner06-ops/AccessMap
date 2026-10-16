@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assessFeature, assessPlace } from './trustEngine.js';
-import { PLACE_BY_ID } from './mockData.js';
+import { DEMO_REFERENCE_DATE, DEMO_SCENARIOS, PLACE_BY_ID, PLACES, buildSeedReports } from './mockData.js';
 
 const NOW = Date.UTC(2026, 9, 14, 6, 0, 0);
 const D = 86400000;
@@ -17,7 +17,7 @@ const evidence = [
   rep({ id: 'toilet-1', featureId: 'toilet', visitedAt: NOW - 21 * D }),
 ];
 
-test('new real places start with limited information', () => {
+test('places without evidence start with limited information', () => {
   const a = assessPlace(PLACE_BY_ID['ruby-hall-clinic'], [], NOW);
   assert.equal(a.status, 'limited');
   assert.equal(a.reportCount, 0);
@@ -69,4 +69,22 @@ test('place status reflects submitted evidence only', () => {
   ];
   assert.equal(assessPlace(PLACE_BY_ID['ruby-hall-clinic'], [], NOW).status, 'limited');
   assert.equal(assessPlace(PLACE_BY_ID['ruby-hall-clinic'], placeEvidence, NOW).status, 'needs_recheck');
+});
+
+test('demo dataset has 20 places and deterministic seeded reports', () => {
+  const first = buildSeedReports();
+  const second = buildSeedReports();
+  assert.equal(PLACES.length, 20);
+  assert.equal(first.length, 35);
+  assert.deepEqual(first, second);
+  assert.ok(first.every((r) => r.source === 'demo' && r.id.startsWith('r-demo-')));
+});
+
+test('demo scenario registry exercises key computed states', () => {
+  const assessments = Object.fromEntries(PLACES.map((p) => [p.id, assessPlace(p, buildSeedReports(), DEMO_REFERENCE_DATE)]));
+  const stateFor = (id) => { const s = DEMO_SCENARIOS.find((x) => x.id === id); return assessments[s.placeId].byId[s.featureId].state; };
+  assert.equal(stateFor('high-trust'), 'accessible');
+  assert.equal(stateFor('conflicting-lift'), 'needs_recheck');
+  assert.equal(stateFor('outdated-evidence'), 'needs_recheck');
+  assert.equal(stateFor('limited-information'), 'limited');
 });

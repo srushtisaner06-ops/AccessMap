@@ -20,7 +20,11 @@ export default function AdminDashboard() {
   const sel = reports.find((r) => r.id === selId) || null;
 
   const conflicts = Object.values(assessments).reduce((s, a) => s + a.conflictCount, 0);
+  const seeded = reports.filter((r) => r.source === 'demo').length;
   const pending = reports.filter((r) => r.reviewState === 'pending').length;
+  const reviewed = reports.filter((r) => r.reviewState === 'reviewed').length;
+  const flagged = reports.filter((r) => r.reviewState === 'flagged').length;
+  const rejected = reports.filter((r) => r.reviewState === 'rejected').length;
   const decide = (decision) => {
     if (!sel) return;
     const res = reviewReport(sel.id, decision, reason);
@@ -34,12 +38,12 @@ export default function AdminDashboard() {
   return (
     <div className="admin">
       <div className="row"><h1 style={{ fontSize: '2rem', marginBottom: 0 }}>Admin review dashboard</h1><span className="demo-tag">DEMO · mocked sign-in</span><span className="spacer" />
-        <button className="btn secondary sm" onClick={() => { if (window.confirm('Clear all submitted reports and review decisions?')) { resetDemo(); setSelId(null); toast('Submitted reports and review decisions cleared.'); } }}><RotateCcw size={15} aria-hidden="true" /> Clear reports</button>
+        <button className="btn secondary sm" onClick={() => { if (window.confirm('Reset all demo reports and review decisions to the original seeded scenarios?')) { resetDemo(); setSelId(null); toast('Demo dataset reset to its original seeded scenarios.'); } }}><RotateCcw size={15} aria-hidden="true" /> Reset demo data</button>
       </div>
       <div className="notice" style={{ marginTop: 10 }}><Info size={18} aria-hidden="true" /><span className="small">Review actions are saved locally and change how a report is treated by the trust engine (rejected reports are excluded from the calculation but stay in history). A review decision is not proof that the real facility was independently inspected.</span></div>
 
       <div className="stats" role="list">
-        {[['Total places', places.length], ['Total reports', reports.length], ['Pending review', pending], ['Features with conflicts', conflicts]].map(([l, v]) => (
+        {[['Total places', places.length], ['Seeded reports', seeded], ['Pending review', pending], ['Reviewed reports', reviewed], ['Flagged reports', flagged], ['Rejected reports', rejected], ['Conflicting features', conflicts]].map(([l, v]) => (
           <div className="card stat" role="listitem" key={l}><b>{v}</b><span className="muted">{l}</span></div>
         ))}
       </div>
@@ -79,7 +83,7 @@ export default function AdminDashboard() {
             {sel && (
               <>
                 <div><strong>{PLACE_BY_ID[sel.placeId]?.name}</strong> · {FEATURE_BY_ID[sel.featureId]?.label}</div>
-                <div className="row"><span className={`chip ${sel.status}`}>{sel.status === 'accessible' ? 'Accessible' : sel.status === 'not_accessible' ? 'Not accessible' : 'Unable to confirm'}</span><ReviewChip state={sel.reviewState} /><span className="chip neutral">Community (unverified)</span></div>
+                <div className="row"><span className={`chip ${sel.status}`}>{sel.status === 'accessible' ? 'Accessible' : sel.status === 'not_accessible' ? 'Not accessible' : 'Unable to confirm'}</span><ReviewChip state={sel.reviewState} /><span className="chip neutral">{sel.sourceLabel || (sel.source === 'demo' ? 'Demo seed data' : 'Community (unverified)')}</span></div>
                 <div className="small muted">Visited {absDate(sel.visitedAt)} · submitted {absDate(sel.submittedAt)}</div>
                 <div>{sel.description ? `“${sel.description}”` : <span className="muted">No description.</span>}</div>
                 {sel.photo ? <Photo photo={sel.photo} alt="Photo submitted with this report" /> : <div className="muted small">No photo supplied.</div>}

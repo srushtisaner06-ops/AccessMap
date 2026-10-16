@@ -4,7 +4,7 @@ import { FEATURE_BY_ID, describeStatus } from '../lib/features.js';
 import { relTime, absDate } from '../lib/format.js';
 import { ReviewChip, Photo } from './TrustBadge.jsx';
 
-const SOURCE = { community: 'Community report (unverified)' };
+const SOURCE = { demo: 'Demo seed data', 'demo-scenario': 'Demo scenario report', community: 'Community report (unverified)' };
 
 export function ReportItem({ report, now, conflict = false, showFeature = false }) {
   const f = FEATURE_BY_ID[report.featureId];
@@ -20,7 +20,7 @@ export function ReportItem({ report, now, conflict = false, showFeature = false 
       {report.description && <div className="small">“{report.description}”</div>}
       <div className="kv">
         <span className="chip neutral">{report.photo ? <><Camera size={14} aria-hidden="true" /> Photo attached</> : <><FileText size={14} aria-hidden="true" /> No photo</>}</span>
-        <span>{SOURCE[report.source] || report.source}</span>
+        <span>{report.sourceLabel || SOURCE[report.source] || report.source}</span>
         <ReviewChip state={report.reviewState} />
       </div>
       {report.reviewState === 'rejected' && report.reviewReason && <div className="small"><strong>Rejected:</strong> {report.reviewReason} (kept for transparency, ignored in trust calculation)</div>}

@@ -30,7 +30,7 @@ export default function Layout({ path, children }) {
           </nav>
           <span className="spacer" />
           {role && <span className="chip neutral small">{role === 'admin' ? 'Admin' : 'User'} session</span>}
-          {role === 'admin' && <button className="btn ghost sm" onClick={() => { if (window.confirm('Clear all submitted reports and review decisions?')) { resetDemo(); toast('Submitted reports and review decisions cleared.'); } }}><RotateCcw size={15} aria-hidden="true" /> Clear reports</button>}
+          {role === 'admin' && <button className="btn ghost sm" onClick={() => { if (window.confirm('Reset all demo reports and review decisions to the original seeded scenarios?')) { resetDemo(); toast('Demo dataset reset to its original seeded scenarios.'); } }}><RotateCcw size={15} aria-hidden="true" /> Reset demo data</button>}
           {role && <button className="btn ghost sm" onClick={() => { logout(); navigate('/'); }}><LogOut size={15} aria-hidden="true" /> Logout</button>}
         </div>
       </header>
@@ -43,7 +43,7 @@ export default function Layout({ path, children }) {
       <main id="main" style={{ flex: 1 }}>{children}</main>
       {path === '/' && (
         <footer className="footer"><div className="footer-inner">
-          <span>AccessMap AI · Pune place information is sourced from public listings. Accessibility evidence is community-submitted and unverified.</span>
+          <span>AccessMap AI · Locations and accessibility evidence are illustrative demonstration data, not independent verification.</span>
           <span>Trust levels are transparent heuristics, not statistically validated probabilities.</span>
         </div></footer>
       )}

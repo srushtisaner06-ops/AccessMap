@@ -21,7 +21,7 @@ export default function LandingPage() {
             <button className="btn lg" onClick={() => navigate('/map')}>Explore Accessibility Map <ArrowRight size={18} aria-hidden="true" /></button>
             <button className="btn lg secondary" onClick={() => navigate('/report')}><Flag size={18} aria-hidden="true" /> Report a Barrier</button>
           </div>
-          <div className="notice"><Info size={18} aria-hidden="true" /><span className="small">Places come from public listings. Trust status reflects only available evidence and does not guarantee that a facility is currently accessible.</span></div>
+          <div className="notice"><Info size={18} aria-hidden="true" /><span className="small">This is an illustrative Pune dataset. Locations, reports, timestamps and photos are demonstration data, not independently verified evidence.</span></div>
         </div>
         <div className="preview" aria-label="Preview of map results">
           <div style={{ background: 'linear-gradient(135deg,#dbe8f5,#eef5fb)', padding: 14, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}><MapPin size={18} aria-hidden="true" /> Pune · sourced places</div>

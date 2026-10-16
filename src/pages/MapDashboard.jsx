@@ -14,13 +14,15 @@ import AccessibilityAssistant from '../components/AccessibilityAssistant.jsx';
 import Legend from '../components/Legend.jsx';
 
 export default function MapDashboard() {
-  const { places, assessments, now, toast } = useStore();
+  const { places, assessments, now, toast, demoScenarios, runConflictDemo } = useStore();
   const { query } = useRoute();
   const selectedId = places.some((p) => p.id === query.place) ? query.place : null;
 
   const [q, setQ] = useState('');
   const [active, setActive] = useState([]);
   const [includeRecheck, setIncludeRecheck] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [trustFilter, setTrustFilter] = useState('all');
   const [ref, setRef] = useState(DEFAULT_REFERENCE);
   const [geo, setGeo] = useState('idle'); // idle | loading | granted | denied | unavailable | error
   const [view, setView] = useState(() => (typeof window !== 'undefined' && window.innerWidth <= 900 ? 'list' : 'map'));
@@ -36,12 +38,15 @@ export default function MapDashboard() {
     return withDistance
       .filter((p) => !needle || [p.name, p.area, p.category, p.address].some((s) => s.toLowerCase().includes(needle)))
       .filter((p) => active.every((fid) => matchesFilter(assessments[p.id], FILTERS.find((f) => f.id === fid).featureId, { includeRecheck })))
+      .filter((p) => statusFilter === 'all' || assessments[p.id].status === statusFilter)
+      .filter((p) => trustFilter === 'all' || assessments[p.id].trust === trustFilter)
       .sort((a, b) => a.distanceKm - b.distanceKm);
-  }, [withDistance, q, active, includeRecheck, assessments]);
+  }, [withDistance, q, active, includeRecheck, statusFilter, trustFilter, assessments]);
 
   const selected = selectedId ? withDistance.find((p) => p.id === selectedId) : null;
 
   const select = (id) => { replaceRoute(`/map${id ? `?place=${id}` : ''}`); if (id) { setTab('features'); } };
+  const openScenario = (scenario) => { replaceRoute(`/map?place=${scenario.placeId}&feature=${scenario.featureId}`); setTab('features'); };
   const toggleFilter = (id) => setActive((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]));
 
   const locate = () => {
@@ -70,7 +75,7 @@ export default function MapDashboard() {
       <div className={`dash ${selected ? 'has-detail' : ''}`} data-view={view}>
         <section className="side" aria-label="Search and nearby places">
           <div className="side-top">
-            <div className="notice warn small"><Info size={16} aria-hidden="true" /><span><strong>Evidence notice.</strong> Places are sourced from public listings. Accessibility statuses appear only when supported by reports or clearly identified source data.</span></div>
+            <div className="notice warn small"><Info size={16} aria-hidden="true" /><span><strong>Demo data notice.</strong> Locations, reports, timestamps and photos are illustrative and not independently verified.</span></div>
             <form role="search" onSubmit={(e) => e.preventDefault()}>
               <div className="input-wrap">
                 <Search size={18} aria-hidden="true" />
@@ -97,7 +102,7 @@ export default function MapDashboard() {
               {geo === 'error' && <div className="notice error small"><AlertTriangle size={16} aria-hidden="true" /><span>Could not get your location (timeout or signal). Choose an area above.</span></div>}
               {(geo === 'idle' || geo === 'loading') && <div className="small muted">{geo === 'loading' ? 'Waiting for location permission…' : `Distances measured from ${ref.label}.`}</div>}
             </div>
-            <AccessibilityFilters active={active} onToggle={toggleFilter} includeRecheck={includeRecheck} onIncludeRecheck={setIncludeRecheck} onClear={() => setActive([])} />
+            <AccessibilityFilters active={active} onToggle={toggleFilter} includeRecheck={includeRecheck} onIncludeRecheck={setIncludeRecheck} onClear={() => { setActive([]); setStatusFilter('all'); setTrustFilter('all'); }} statusFilter={statusFilter} trustFilter={trustFilter} onStatusFilter={setStatusFilter} onTrustFilter={setTrustFilter} />
           </div>
           <div className="side-list">
             <div className="row small" role="status" aria-live="polite">
@@ -106,11 +111,18 @@ export default function MapDashboard() {
               <button className="btn ghost sm" onClick={() => setShowAssistant((s) => !s)}>{showAssistant ? 'Hide assistant' : 'Ask assistant'}</button>
             </div>
             {showAssistant && <div className="card flat"><AccessibilityAssistant place={selected} places={withDistance} assessments={assessments} now={now} refLabel={ref.label} /></div>}
+            <section className="card flat scenario-card" aria-labelledby="scenario-heading">
+              <h3 id="scenario-heading">Explore Demo Scenarios</h3>
+              <p className="small muted">Illustrative reports only; not independently verified.</p>
+              <div className="scenario-list">
+                {demoScenarios.map((scenario) => <button key={scenario.id} className="btn secondary sm" onClick={() => openScenario(scenario)} title={scenario.description}>{scenario.title.replace('View ', '')}</button>)}
+              </div>
+            </section>
             {results.length === 0 && (
               <div className="empty">
                 <SearchX size={32} aria-hidden="true" />
                 <div><strong>No places match.</strong><br />Try a different search or remove some filters. Filters only match features currently reported accessible.</div>
-                <button className="btn secondary sm" onClick={() => { setQ(''); setActive([]); }}>Clear search and filters</button>
+                <button className="btn secondary sm" onClick={() => { setQ(''); setActive([]); setStatusFilter('all'); setTrustFilter('all'); }}>Clear search and filters</button>
               </div>
             )}
             {results.map((p) => <LocationCard key={p.id} place={p} assessment={assessments[p.id]} selected={p.id === selectedId} onSelect={select} now={now} />)}
@@ -130,8 +142,9 @@ export default function MapDashboard() {
 
         {selected && (
           <LocationDetails
-            place={selected} assessment={assessments[selected.id]} now={now} places={withDistance} assessments={assessments} refLabel={ref.label}
+            place={selected} assessment={assessments[selected.id]} now={now} places={withDistance} assessments={assessments} refLabel={ref.label} focusFeature={query.feature}
             tab={tab} setTab={setTab} onClose={() => select(null)} onReport={(fid) => goReport(selected.id, fid)}
+            onConflictDemo={(featureId) => { const res = runConflictDemo(selected.id, featureId); if (res.ok) toast('Demo conflict added. The feature now needs recheck.'); else toast(res.error, 'error'); }}
           />
         )}
       </div>

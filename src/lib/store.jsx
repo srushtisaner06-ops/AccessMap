@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { loadState, saveState, freshState, clearState, loadCachedPlaces, cachePlaces } from './storage.js';
-import { PLACES } from './mockData.js';
+import { DEMO_SCENARIOS, PLACE_BY_ID, PLACES } from './mockData.js';
 import { assessAll, assessFeature } from './trustEngine.js';
 import { validateReportInput } from './validation.js';
 
@@ -60,6 +60,7 @@ export function StoreProvider({ children }) {
       description: (input.description || '').trim(),
       photo: input.photo ? { dataUrl: input.photo, caption: 'Photo supplied by visitor (not independently verified)' } : null,
       source: input.source || 'community',
+      sourceLabel: input.sourceLabel || (input.source === 'demo' ? 'Demo scenario report' : 'Community report (unverified)'),
       reviewState: 'pending', reviewReason: '',
     };
     const before = assessFeature(input.placeId, input.featureId, state.reports, t);
@@ -68,6 +69,20 @@ export function StoreProvider({ children }) {
     setTick(t);
     return { ok: true, report, before, after };
   }, [state.reports]);
+
+  const runConflictDemo = useCallback((placeId, featureId) => {
+    const place = PLACE_BY_ID[placeId];
+    const assessment = assessments[placeId]?.byId?.[featureId];
+    if (!place || !assessment) return { ok: false, error: 'That demo scenario is unavailable.' };
+    if (assessment.agreement === 'conflict') return { ok: false, error: 'This feature already shows conflicting reports. Reset demo data to repeat the demo.' };
+    if (!['accessible', 'not_accessible'].includes(assessment.state)) return { ok: false, error: 'Select a feature with a current accessible or not accessible report.' };
+    const opposite = assessment.state === 'accessible' ? 'not_accessible' : 'accessible';
+    const res = addReport({
+      placeId, featureId, status: opposite, visitedAt: Date.now() - 60000,
+      description: 'Demo-generated report added to illustrate conflict detection.', confirmed: true, source: 'demo', sourceLabel: 'Demo scenario report',
+    });
+    return { ...res, place };
+  }, [assessments, addReport]);
 
   const reviewReport = useCallback((reportId, decision, reason = '') => {
     if (!['reviewed', 'flagged', 'rejected'].includes(decision)) return { ok: false, error: 'Unknown decision.' };
@@ -90,10 +105,10 @@ export function StoreProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
-    places, reports: state.reports, reviews: state.reviews, assessments, now,
-    addReport, reviewReport, resetDemo,
+    places, reports: state.reports, reviews: state.reviews, assessments, now, demoScenarios: DEMO_SCENARIOS,
+    addReport, reviewReport, runConflictDemo, resetDemo,
     toast, toasts, dismissToast, storageError, dismissStorageError: () => setStorageError(null),
-  }), [state, assessments, now, addReport, reviewReport, resetDemo, toast, toasts, dismissToast, storageError]);
+  }), [state, assessments, now, addReport, reviewReport, runConflictDemo, resetDemo, toast, toasts, dismissToast, storageError]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
