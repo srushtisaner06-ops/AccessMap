@@ -12,7 +12,8 @@ export default function LocationDetails({ place, assessment, now, places, assess
   const heading = useRef(null);
   const [featureFilter, setFeatureFilter] = useState('all');
   useEffect(() => { heading.current?.focus(); setFeatureFilter('all'); }, [place.id]);
-  const all = assessment.features.flatMap((f) => f.history).sort((a, b) => b.visitedAt - a.visitedAt);
+  const all = assessment.features.flatMap((f) => f.history).filter((r) => r.reviewState !== 'rejected').sort((a, b) => b.visitedAt - a.visitedAt);
+  const activeReportCount = assessment.features.reduce((sum, f) => sum + f.activeCount, 0);
   const shown = featureFilter === 'all' ? all : all.filter((r) => r.featureId === featureFilter);
   const conflictFeatureId = focusFeature && assessment.byId[focusFeature] ? focusFeature : 'lift';
   const conflictFeature = assessment.byId[conflictFeatureId];
@@ -42,7 +43,7 @@ export default function LocationDetails({ place, assessment, now, places, assess
           <>
             <div className="card flat stack">
               <div><strong>Overall information status:</strong> {assessment.reason}</div>
-              <div className="small muted"><Clock size={13} aria-hidden="true" /> Last confirmed: {assessment.lastConfirmedAt ? `${relTime(assessment.lastConfirmedAt, now)} (${absDate(assessment.lastConfirmedAt)})` : 'never'} · {assessment.reportCount} reports across {assessment.features.length} features</div>
+              <div className="small muted"><Clock size={13} aria-hidden="true" /> Last confirmed: {assessment.lastConfirmedAt ? `${relTime(assessment.lastConfirmedAt, now)} (${absDate(assessment.lastConfirmedAt)})` : 'never'} · {activeReportCount} reports across {assessment.features.length} features</div>
               <div className="small muted">{assessment.trustNote} Overall status considers core features: entrance, wheelchair access, lift, toilet. There is intentionally no single accessibility score.</div>
               <div className="notice"><Info size={16} aria-hidden="true" /><span className="small">Demo locations, reports, timestamps and photos are illustrative only. Accessibility status is based on the demo evidence and does not guarantee current conditions.</span></div>
               <div className="small muted">Place source: {place.sourceUrl ? <a href={place.sourceUrl} target="_blank" rel="noreferrer">{place.sourceName}<ExternalLink size={12} aria-hidden="true" /></a> : place.sourceName} · checked {place.sourceUpdatedAt}</div>
@@ -65,7 +66,7 @@ export default function LocationDetails({ place, assessment, now, places, assess
                 {place.features.map((id) => <option key={id} value={id}>{FEATURE_BY_ID[id].label}</option>)}
               </select>
             </div>
-            <div className="muted small">Newest visit first. Nothing is deleted or overwritten; conflicting and rejected reports stay visible.</div>
+            <div className="muted small">Newest visit first. Accessibility status is calculated from current usable evidence and does not guarantee present conditions.</div>
             <ReportHistory reports={shown} now={now} showFeature conflictIds={assessment.features.flatMap((f) => f.conflictingReports.map((r) => r.id))} empty="No reports match this filter." />
           </>
         )}

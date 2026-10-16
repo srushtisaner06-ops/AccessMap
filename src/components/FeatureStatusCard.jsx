@@ -11,7 +11,8 @@ export default function FeatureStatusCard({ assessment: a, now, onReport }) {
   const f = FEATURE_BY_ID[a.featureId];
   const Icon = ICONS[f.icon] || Accessibility;
   const latest = a.latestReport;
-  const previous = a.history.filter((r) => r !== latest);
+  const publicHistory = a.history.filter((r) => r.reviewState !== 'rejected');
+  const previous = publicHistory.filter((r) => r !== latest);
   const conflictIds = a.conflictingReports.map((r) => r.id);
   return (
     <article className={`feat ${a.state}`} aria-labelledby={`feat-${a.featureId}`}>
@@ -23,7 +24,7 @@ export default function FeatureStatusCard({ assessment: a, now, onReport }) {
       </div>
       <div><strong>Why:</strong> {a.reason}</div>
       <div className="kv">
-        <span>{a.reportCount} report{a.reportCount === 1 ? '' : 's'}</span>
+        <span>{a.activeCount} report{a.activeCount === 1 ? '' : 's'}</span>
         <span aria-hidden="true">·</span>
         <span>{{ conflict: 'Reports disagree', agree: 'Reports agree', single: 'Single report', stale: 'Only outdated reports', none: 'No usable reports' }[a.agreement]}</span>
         <span aria-hidden="true">·</span>
@@ -32,7 +33,7 @@ export default function FeatureStatusCard({ assessment: a, now, onReport }) {
         <span className="chip neutral"><Camera size={13} aria-hidden="true" /> {a.hasPhoto ? 'Photo available' : 'No photo'}</span>
       </div>
       <div className="small muted">{a.trustExplanation}</div>
-      {a.notes.map((n, i) => <div key={i} className="small muted"><Flag size={12} aria-hidden="true" /> {n}</div>)}
+      {a.notes.filter((n) => !/rejected|flagged/i.test(n)).map((n, i) => <div key={i} className="small muted"><Flag size={12} aria-hidden="true" /> {n}</div>)}
 
       {a.conflictingReports.length > 0 && (
         <div>
@@ -66,10 +67,10 @@ export default function FeatureStatusCard({ assessment: a, now, onReport }) {
           <ReportHistory reports={previous} now={now} />
         </details>
       )}
-      {a.conflictingReports.length > 0 && a.history.length > a.conflictingReports.length && (
+      {a.conflictingReports.length > 0 && publicHistory.length > a.conflictingReports.length && (
         <details className="disclosure">
-          <summary>Other earlier reports ({a.history.length - a.conflictingReports.length})</summary>
-          <ReportHistory reports={a.history.filter((r) => !a.conflictingReports.includes(r))} now={now} />
+          <summary>Other earlier reports ({publicHistory.length - a.conflictingReports.length})</summary>
+          <ReportHistory reports={publicHistory.filter((r) => !a.conflictingReports.includes(r))} now={now} />
         </details>
       )}
       <div><button className="btn secondary sm" onClick={() => onReport(a.featureId)}><Plus size={15} aria-hidden="true" /> Report on {f.label.toLowerCase()}</button></div>

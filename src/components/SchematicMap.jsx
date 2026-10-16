@@ -24,7 +24,7 @@ export default function SchematicMap({ places, assessments, selectedId, onSelect
         return (
           <div key={p.id} className="schematic-pin" style={pos(p)}>
             <button type="button" className={`pin ${a.status}${p.id === selectedId ? ' selected' : ''}`} onClick={() => onSelect(p.id)}
-              aria-label={`${p.name}, ${PLACE_STATUS_LABEL[a.status]}. Open details.`} aria-pressed={p.id === selectedId} title={`${p.name} — ${PLACE_STATUS_LABEL[a.status]}`}>
+              aria-label={`${p.name}, ${PLACE_STATUS_LABEL[a.status]}, ${a.trust} trust. Open details.`} aria-pressed={p.id === selectedId} title={`${p.name} — ${PLACE_STATUS_LABEL[a.status]} — ${a.trust} trust`}>
               <span aria-hidden="true">{GLYPH[a.status]}</span>
             </button>
             <div className="small" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', fontWeight: 700, background: 'rgba(255,255,255,.85)', padding: '0 4px', borderRadius: 4, marginTop: 2 }}>{p.name}</div>

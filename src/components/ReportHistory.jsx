@@ -1,14 +1,14 @@
 import React from 'react';
-import { Camera, FileText, Flag } from 'lucide-react';
+import { Camera, FileText } from 'lucide-react';
 import { FEATURE_BY_ID, describeStatus } from '../lib/features.js';
 import { relTime, absDate } from '../lib/format.js';
-import { ReviewChip, Photo } from './TrustBadge.jsx';
+import { Photo } from './TrustBadge.jsx';
 
 const SOURCE = { demo: 'Demo seed data', 'demo-scenario': 'Demo scenario report', community: 'Community report (unverified)' };
 
 export function ReportItem({ report, now, conflict = false, showFeature = false }) {
   const f = FEATURE_BY_ID[report.featureId];
-  const cls = `report ${conflict ? 'conflict' : ''} ${report.reviewState === 'rejected' ? 'rejected' : ''}`;
+  const cls = `report ${conflict ? 'conflict' : ''}`;
   return (
     <li className={cls} style={{ listStyle: 'none' }}>
       <div className="report-head">
@@ -21,12 +21,9 @@ export function ReportItem({ report, now, conflict = false, showFeature = false 
       <div className="kv">
         <span className="chip neutral">{report.photo ? <><Camera size={14} aria-hidden="true" /> Photo attached</> : <><FileText size={14} aria-hidden="true" /> No photo</>}</span>
         <span>{report.sourceLabel || SOURCE[report.source] || report.source}</span>
-        <ReviewChip state={report.reviewState} />
       </div>
-      {report.reviewState === 'rejected' && report.reviewReason && <div className="small"><strong>Rejected:</strong> {report.reviewReason} (kept for transparency, ignored in trust calculation)</div>}
-      {report.reviewState === 'flagged' && <div className="small"><Flag size={13} aria-hidden="true" /> Flagged for further investigation.</div>}
       {report.photo && <Photo photo={report.photo} />}
-      <div className="muted small">Submitted {absDate(report.submittedAt)}. A reviewer status is not independent inspection of the facility.</div>
+      <div className="muted small">Submitted {absDate(report.submittedAt)}. This evidence is not independent verification of the facility.</div>
     </li>
   );
 }

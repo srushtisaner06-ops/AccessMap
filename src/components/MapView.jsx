@@ -75,9 +75,9 @@ export default function MapView({ places, assessments, selectedId, onSelect, use
       }
       m.el.className = `pin ${a.status}${p.id === selectedId ? ' selected' : ''}`;
       m.el.innerHTML = `<span aria-hidden="true">${GLYPH[a.status]}</span>`;
-      m.el.setAttribute('aria-label', `${p.name}, ${PLACE_STATUS_LABEL[a.status]}. Open details.`);
+      m.el.setAttribute('aria-label', `${p.name}, ${PLACE_STATUS_LABEL[a.status]}, ${a.trust} trust. Open details.`);
       m.el.setAttribute('aria-pressed', String(p.id === selectedId));
-      m.el.title = `${p.name} — ${PLACE_STATUS_LABEL[a.status]}`;
+      m.el.title = `${p.name} — ${PLACE_STATUS_LABEL[a.status]} — ${a.trust} trust`;
     }
   }, [places, assessments, selectedId, status]);
 
@@ -118,7 +118,7 @@ export default function MapView({ places, assessments, selectedId, onSelect, use
   }
   return (
     <>
-      <div ref={container} className="map" role="region" aria-label="Map of sample places. Use the list for a keyboard-friendly alternative." />
+      <div ref={container} className="map" role="region" aria-label="Map of Pune places. Marker colors show computed accessibility status; use the list for details." />
       {status === 'loading' && <div className="map-overlay notice" style={{ left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}><div className="spinner" aria-hidden="true" /> Loading map…</div>}
       {tilesFailed && (
         <div className="map-overlay notice warn map-note" role="status" style={{ top: 60 }}>

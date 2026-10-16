@@ -17,7 +17,8 @@ export default function LocationCard({ place, assessment, selected, onSelect, no
         <StatusChip state={assessment.status} kind="place" />
         <TrustBadge level={assessment.trust} prefix="Lowest trust" />
       </div>
-      <div className="muted small"><Clock size={13} aria-hidden="true" /> {assessment.lastConfirmedAt ? `Last visit ${relTime(assessment.lastConfirmedAt, now)}` : 'No visits reported'} · {assessment.reportCount} reports{assessment.conflictCount ? ` · ${assessment.conflictCount} conflict` : ''}</div>
+      <div className="small muted">{assessment.reason}</div>
+      <div className="muted small"><Clock size={13} aria-hidden="true" /> {assessment.lastConfirmedAt ? `Last visit ${relTime(assessment.lastConfirmedAt, now)}` : 'No visits reported'} · {assessment.features.reduce((sum, f) => sum + f.activeCount, 0)} reports{assessment.conflictCount ? ` · ${assessment.conflictCount} conflict` : ''}</div>
     </button>
   );
 }

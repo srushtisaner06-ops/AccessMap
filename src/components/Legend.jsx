@@ -13,7 +13,7 @@ export default function Legend({ className = '' }) {
         <li><TrustBadge level="high" /></li>
         <li><TrustBadge level="medium" /></li>
         <li><TrustBadge level="low" /></li>
-        <li className="muted">Trust shows how much evidence supports a status. It does not guarantee a facility is accessible now.</li>
+        <li className="muted">Map status and trust are computed from usable reports after admin review decisions. They describe available evidence, not a guarantee of current conditions.</li>
       </ul>
     </details>
   );
