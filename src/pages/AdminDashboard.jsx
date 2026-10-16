@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ShieldCheck, Flag, Ban, CheckCheck, Lock, RotateCcw, Info } from 'lucide-react';
+import { ShieldCheck, Flag, Ban, CheckCheck, RotateCcw, Info } from 'lucide-react';
 import { useStore } from '../lib/store.jsx';
 import { FEATURES, FEATURE_BY_ID } from '../lib/features.js';
 import { PLACE_BY_ID } from '../lib/mockData.js';
@@ -8,7 +8,6 @@ import { ReviewChip, Photo } from '../components/TrustBadge.jsx';
 
 export default function AdminDashboard() {
   const { places, reports, reviews, assessments, now, reviewReport, resetDemo, toast } = useStore();
-  const [authed, setAuthed] = useState(() => { try { return sessionStorage.getItem('accessmap-admin') === '1'; } catch { return false; } });
   const [fFeature, setFFeature] = useState('all');
   const [fStatus, setFStatus] = useState('all');
   const [fReview, setFReview] = useState('all');
@@ -19,18 +18,6 @@ export default function AdminDashboard() {
   const rows = useMemo(() => [...reports].sort((a, b) => b.submittedAt - a.submittedAt)
     .filter((r) => (fFeature === 'all' || r.featureId === fFeature) && (fStatus === 'all' || r.status === fStatus) && (fReview === 'all' || r.reviewState === fReview)), [reports, fFeature, fStatus, fReview]);
   const sel = reports.find((r) => r.id === selId) || null;
-
-  if (!authed) {
-    return (
-      <div className="form-page">
-        <div className="card stack">
-          <h1 style={{ fontSize: '1.8rem' }}><Lock size={24} aria-hidden="true" /> Admin review <span className="demo-tag">DEMO</span></h1>
-          <div className="notice warn"><Info size={18} aria-hidden="true" /><span>This is a mocked sign-in for the prototype. There is no real authentication or role-based security.</span></div>
-          <button className="btn lg" onClick={() => { try { sessionStorage.setItem('accessmap-admin', '1'); } catch { /* ignore */ } setAuthed(true); }}>Continue as demo reviewer</button>
-        </div>
-      </div>
-    );
-  }
 
   const conflicts = Object.values(assessments).reduce((s, a) => s + a.conflictCount, 0);
   const pending = reports.filter((r) => r.reviewState === 'pending').length;
@@ -47,7 +34,7 @@ export default function AdminDashboard() {
   return (
     <div className="admin">
       <div className="row"><h1 style={{ fontSize: '2rem', marginBottom: 0 }}>Admin review dashboard</h1><span className="demo-tag">DEMO · mocked sign-in</span><span className="spacer" />
-        <button className="btn secondary sm" onClick={() => { if (window.confirm('Reset all demo reports and review decisions to the original sample data?')) { resetDemo(); setSelId(null); toast('Demo data reset to the original sample set.'); } }}><RotateCcw size={15} aria-hidden="true" /> Reset demo data</button>
+        <button className="btn secondary sm" onClick={() => { if (window.confirm('Clear all submitted reports and review decisions?')) { resetDemo(); setSelId(null); toast('Submitted reports and review decisions cleared.'); } }}><RotateCcw size={15} aria-hidden="true" /> Clear reports</button>
       </div>
       <div className="notice" style={{ marginTop: 10 }}><Info size={18} aria-hidden="true" /><span className="small">Review actions are saved locally and change how a report is treated by the trust engine (rejected reports are excluded from the calculation but stay in history). A review decision is not proof that the real facility was independently inspected.</span></div>
 
@@ -92,7 +79,7 @@ export default function AdminDashboard() {
             {sel && (
               <>
                 <div><strong>{PLACE_BY_ID[sel.placeId]?.name}</strong> · {FEATURE_BY_ID[sel.featureId]?.label}</div>
-                <div className="row"><span className={`chip ${sel.status}`}>{sel.status === 'accessible' ? 'Accessible' : sel.status === 'not_accessible' ? 'Not accessible' : 'Unable to confirm'}</span><ReviewChip state={sel.reviewState} /><span className="chip neutral">{sel.source === 'seed' ? 'Sample data' : sel.source === 'demo' ? 'Demo-generated' : 'Community (unverified)'}</span></div>
+                <div className="row"><span className={`chip ${sel.status}`}>{sel.status === 'accessible' ? 'Accessible' : sel.status === 'not_accessible' ? 'Not accessible' : 'Unable to confirm'}</span><ReviewChip state={sel.reviewState} /><span className="chip neutral">Community (unverified)</span></div>
                 <div className="small muted">Visited {absDate(sel.visitedAt)} · submitted {absDate(sel.submittedAt)}</div>
                 <div>{sel.description ? `“${sel.description}”` : <span className="muted">No description.</span>}</div>
                 {sel.photo ? <Photo photo={sel.photo} alt="Photo submitted with this report" /> : <div className="muted small">No photo supplied.</div>}

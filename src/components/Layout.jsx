@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-import { Home, Map as MapIcon, Flag, ShieldCheck, Menu, X, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Home, Map as MapIcon, Flag, ShieldCheck, Menu, X, RotateCcw, AlertTriangle, LogOut } from 'lucide-react';
 import { useStore } from '../lib/store.jsx';
 import { navigate } from '../lib/router.js';
+import { getRole, logout } from '../lib/auth.js';
 import Toasts from './Toasts.jsx';
-
-const LINKS = [
-  ['/', 'Home', Home],
-  ['/map', 'Map', MapIcon],
-  ['/report', 'Report a Barrier', Flag],
-  ['/admin', 'Admin', ShieldCheck],
-];
 
 export default function Layout({ path, children }) {
   const [open, setOpen] = useState(false);
+  const role = getRole();
+  const links = role === 'admin' ? [['/admin', 'Admin', ShieldCheck]] : role === 'user' ? [['/home', 'Home', Home], ['/map', 'Map', MapIcon], ['/report', 'Report a Barrier', Flag]] : [];
   const { resetDemo, toast, storageError, dismissStorageError } = useStore();
   const go = (e, to) => { e.preventDefault(); setOpen(false); navigate(to); };
   return (
@@ -26,14 +22,16 @@ export default function Layout({ path, children }) {
           </a>
           <button className="btn ghost menu-btn" aria-expanded={open} aria-controls="nav-links" onClick={() => setOpen((o) => !o)}>{open ? <X size={20} /> : <Menu size={20} />} Menu</button>
           <nav id="nav-links" className={`nav-links ${open ? 'open' : ''}`} aria-label="Main">
-            {LINKS.map(([to, label, Icon]) => (
-              <a key={to} href={`#${to}`} onClick={(e) => go(e, to)} aria-current={(to === '/' ? path === '/' : path.startsWith(to)) ? 'page' : undefined}>
+            {links.map(([to, label, Icon]) => (
+              <a key={to} href={`#${to}`} onClick={(e) => go(e, to)} aria-current={(to === '/home' ? path === '/home' : path.startsWith(to)) ? 'page' : undefined}>
                 <Icon size={17} aria-hidden="true" /> {label}{to === '/admin' && <span className="demo-tag">DEMO</span>}
               </a>
             ))}
           </nav>
           <span className="spacer" />
-          <button className="btn ghost sm" onClick={() => { if (window.confirm('Reset all demo reports and review decisions to the original sample data?')) { resetDemo(); toast('Demo data reset to the original sample set.'); } }}><RotateCcw size={15} aria-hidden="true" /> Reset demo data</button>
+          {role && <span className="chip neutral small">{role === 'admin' ? 'Admin' : 'User'} session</span>}
+          {role === 'admin' && <button className="btn ghost sm" onClick={() => { if (window.confirm('Clear all submitted reports and review decisions?')) { resetDemo(); toast('Submitted reports and review decisions cleared.'); } }}><RotateCcw size={15} aria-hidden="true" /> Clear reports</button>}
+          {role && <button className="btn ghost sm" onClick={() => { logout(); navigate('/'); }}><LogOut size={15} aria-hidden="true" /> Logout</button>}
         </div>
       </header>
       {storageError && (
@@ -45,7 +43,7 @@ export default function Layout({ path, children }) {
       <main id="main" style={{ flex: 1 }}>{children}</main>
       {path === '/' && (
         <footer className="footer"><div className="footer-inner">
-          <span>AccessMap AI · Sociothon’26 PS 09 prototype. All places and reports are fictional demonstration data.</span>
+          <span>AccessMap AI · Pune place information is sourced from public listings. Accessibility evidence is community-submitted and unverified.</span>
           <span>Trust levels are transparent heuristics, not statistically validated probabilities.</span>
         </div></footer>
       )}

@@ -1,58 +1,72 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assessFeature, assessPlace } from './trustEngine.js';
-import { buildSeedReports, PLACE_BY_ID } from './mockData.js';
+import { PLACE_BY_ID } from './mockData.js';
 
 const NOW = Date.UTC(2026, 9, 14, 6, 0, 0);
-const seed = buildSeedReports(NOW);
-const rep = (o) => ({ id: Math.random().toString(), placeId: 'p', featureId: 'lift', status: 'accessible', visitedAt: NOW, submittedAt: NOW, description: '', photo: null, reviewState: 'pending', ...o });
 const D = 86400000;
+const rep = (o = {}) => ({
+  id: Math.random().toString(), placeId: 'ruby-hall-clinic', featureId: 'lift', status: 'accessible',
+  visitedAt: NOW, submittedAt: NOW, description: 'Observed during a visit.', photo: null, reviewState: 'pending', ...o,
+});
+const evidence = [
+  rep({ id: 'entrance-1', featureId: 'entrance', photo: { dataUrl: 'data:image/png;base64,test' } }),
+  rep({ id: 'entrance-2', featureId: 'entrance', visitedAt: NOW - D }),
+  rep({ id: 'lift-1', status: 'accessible', photo: { dataUrl: 'data:image/png;base64,test' } }),
+  rep({ id: 'lift-2', status: 'not_accessible', visitedAt: NOW - D }),
+  rep({ id: 'toilet-1', featureId: 'toilet', visitedAt: NOW - 21 * D }),
+];
 
-test('Cafe Central entrance: recent photo + agreement -> High', () => {
-  const a = assessFeature('cafe-central', 'entrance', seed, NOW);
+test('new real places start with limited information', () => {
+  const a = assessPlace(PLACE_BY_ID['ruby-hall-clinic'], [], NOW);
+  assert.equal(a.status, 'limited');
+  assert.equal(a.reportCount, 0);
+});
+
+test('recent photo and agreement produce high trust', () => {
+  const a = assessFeature('ruby-hall-clinic', 'entrance', evidence, NOW);
   assert.equal(a.state, 'accessible'); assert.equal(a.trust, 'high');
 });
-test('Cafe Central lift: conflict -> Needs Recheck, Low, both reports listed', () => {
-  const a = assessFeature('cafe-central', 'lift', seed, NOW);
-  assert.equal(a.state, 'needs_recheck'); assert.equal(a.trust, 'low'); assert.equal(a.agreement, 'conflict');
-  assert.equal(a.conflictingReports.length, 2); assert.equal(a.history.length, 3);
+
+test('conflicting recent reports produce Needs Recheck', () => {
+  const a = assessFeature('ruby-hall-clinic', 'lift', evidence, NOW);
+  assert.equal(a.state, 'needs_recheck'); assert.equal(a.trust, 'low');
+  assert.equal(a.agreement, 'conflict'); assert.equal(a.conflictingReports.length, 2);
 });
-test('Cafe Central toilet: single 3-week-old report without photo -> Medium or lower', () => {
-  const a = assessFeature('cafe-central', 'toilet', seed, NOW);
-  assert.equal(a.state, 'accessible'); assert.notEqual(a.trust, 'high');
-});
-test('stale-only reports -> Needs Recheck; no reports -> Limited', () => {
-  const stale = assessFeature('p', 'lift', [rep({ visitedAt: NOW - 60 * D })], NOW);
+
+test('stale-only reports produce Needs Recheck and no reports are limited', () => {
+  const stale = assessFeature('ruby-hall-clinic', 'lift', [rep({ visitedAt: NOW - 60 * D })], NOW);
   assert.equal(stale.state, 'needs_recheck'); assert.match(stale.reason, /Only one older report/);
-  assert.equal(assessFeature('p', 'lift', [], NOW).state, 'limited');
+  assert.equal(assessFeature('ruby-hall-clinic', 'lift', [], NOW).state, 'limited');
 });
-test('unable-only -> Limited', () => {
-  assert.equal(assessFeature('p', 'lift', [rep({ status: 'unable' })], NOW).state, 'limited');
+
+test('unable-only reports remain limited', () => {
+  assert.equal(assessFeature('ruby-hall-clinic', 'lift', [rep({ status: 'unable' })], NOW).state, 'limited');
 });
-test('lift window (30d) is shorter than entrance window (180d)', () => {
-  const r = [rep({ visitedAt: NOW - 60 * D })];
-  assert.equal(assessFeature('p', 'lift', r, NOW).state, 'needs_recheck');
-  assert.notEqual(assessFeature('p', 'entrance', r.map((x) => ({ ...x, featureId: 'entrance' })), NOW).state, 'needs_recheck');
+
+test('lift freshness window is shorter than entrance window', () => {
+  const lift = [rep({ visitedAt: NOW - 60 * D })];
+  assert.equal(assessFeature('ruby-hall-clinic', 'lift', lift, NOW).state, 'needs_recheck');
+  assert.notEqual(assessFeature('ruby-hall-clinic', 'entrance', lift.map((x) => ({ ...x, featureId: 'entrance' })), NOW).state, 'needs_recheck');
 });
-test('new conflicting report flips hospital lift and nothing is deleted', () => {
-  const before = assessFeature('city-hospital', 'lift', seed, NOW);
-  assert.equal(before.state, 'accessible');
-  const next = [...seed, rep({ placeId: 'city-hospital', featureId: 'lift', status: 'not_accessible', visitedAt: NOW })];
-  const after = assessFeature('city-hospital', 'lift', next, NOW);
-  assert.equal(after.state, 'needs_recheck'); assert.equal(after.history.length, before.history.length + 1);
-});
+
 test('rejected reports are ignored in calculation but kept in history', () => {
-  const next = [...seed, rep({ placeId: 'city-hospital', featureId: 'lift', status: 'not_accessible', reviewState: 'rejected' })];
-  const a = assessFeature('city-hospital', 'lift', next, NOW);
-  assert.equal(a.state, 'accessible'); assert.equal(a.rejectedCount, 1); assert.ok(a.history.some((r) => r.reviewState === 'rejected'));
+  const a = assessFeature('ruby-hall-clinic', 'lift', [rep({ status: 'not_accessible', reviewState: 'rejected' })], NOW);
+  assert.equal(a.state, 'limited'); assert.equal(a.rejectedCount, 1);
+  assert.ok(a.history.some((r) => r.reviewState === 'rejected'));
 });
-test('flagged report caps trust at Medium', () => {
-  const rs = [rep({ photo: { sample: true }, reviewState: 'flagged' }), rep({ visitedAt: NOW - D })];
-  assert.equal(assessFeature('p', 'lift', rs, NOW).trust, 'medium');
+
+test('flagged report caps trust at medium', () => {
+  const rs = [rep({ photo: { dataUrl: 'data:image/png;base64,test' }, reviewState: 'flagged' }), rep({ id: 'second', visitedAt: NOW - D })];
+  assert.equal(assessFeature('ruby-hall-clinic', 'lift', rs, NOW).trust, 'medium');
 });
-test('place statuses', () => {
-  assert.equal(assessPlace(PLACE_BY_ID['cafe-central'], seed, NOW).status, 'needs_recheck');
-  assert.equal(assessPlace(PLACE_BY_ID['city-hospital'], seed, NOW).status, 'confirmed');
-  assert.equal(assessPlace(PLACE_BY_ID['orion-mall'], seed, NOW).status, 'barrier');
-  assert.equal(assessPlace(PLACE_BY_ID['swargate-metro'], seed, NOW).status, 'limited');
+
+test('place status reflects submitted evidence only', () => {
+  const placeEvidence = [
+    ...evidence,
+    rep({ id: 'toilet-2', featureId: 'toilet', status: 'accessible' }),
+    rep({ id: 'wheelchair-1', featureId: 'wheelchair', status: 'accessible' }),
+  ];
+  assert.equal(assessPlace(PLACE_BY_ID['ruby-hall-clinic'], [], NOW).status, 'limited');
+  assert.equal(assessPlace(PLACE_BY_ID['ruby-hall-clinic'], placeEvidence, NOW).status, 'needs_recheck');
 });

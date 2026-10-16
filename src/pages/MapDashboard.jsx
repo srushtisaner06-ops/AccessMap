@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Search, LocateFixed, Zap, Map as MapIcon, List, Info, AlertTriangle, SearchX } from 'lucide-react';
+import { Search, LocateFixed, Map as MapIcon, List, Info, AlertTriangle, SearchX } from 'lucide-react';
 import { useStore } from '../lib/store.jsx';
 import { useRoute, navigate, replaceRoute } from '../lib/router.js';
 import { FILTERS } from '../lib/features.js';
@@ -14,7 +14,7 @@ import AccessibilityAssistant from '../components/AccessibilityAssistant.jsx';
 import Legend from '../components/Legend.jsx';
 
 export default function MapDashboard() {
-  const { places, assessments, now, runConflictDemo, conflictDemoTarget, toast } = useStore();
+  const { places, assessments, now, toast } = useStore();
   const { query } = useRoute();
   const selectedId = places.some((p) => p.id === query.place) ? query.place : null;
 
@@ -59,14 +59,6 @@ export default function MapDashboard() {
     else { setRef(DEFAULT_REFERENCE); }
   };
 
-  const demo = () => {
-    const before = conflictDemoTarget;
-    const res = runConflictDemo();
-    if (!res.ok) { toast(res.error || 'Demo could not run.', 'error'); return; }
-    toast(`Conflict demo: added a conflicting lift report for ${res.place.name}. Lift changed from "${before.assessment.state === 'accessible' ? 'Accessible' : 'Not accessible'}" to "${res.after.state === 'needs_recheck' ? 'Needs Recheck' : res.after.state}".`);
-    select(res.place.id); setTab('features');
-  };
-
   const goReport = (placeId, featureId) => navigate(`/report?place=${placeId}${featureId ? `&feature=${featureId}` : ''}`);
 
   return (
@@ -78,7 +70,7 @@ export default function MapDashboard() {
       <div className={`dash ${selected ? 'has-detail' : ''}`} data-view={view}>
         <section className="side" aria-label="Search and nearby places">
           <div className="side-top">
-            <div className="notice warn small"><Info size={16} aria-hidden="true" /><span><strong>Demonstration data.</strong> All places and reports are fictional examples, not verified real-world information.</span></div>
+            <div className="notice warn small"><Info size={16} aria-hidden="true" /><span><strong>Evidence notice.</strong> Places are sourced from public listings. Accessibility statuses appear only when supported by reports or clearly identified source data.</span></div>
             <form role="search" onSubmit={(e) => e.preventDefault()}>
               <div className="input-wrap">
                 <Search size={18} aria-hidden="true" />
@@ -130,11 +122,8 @@ export default function MapDashboard() {
             ? <SchematicMap places={results} assessments={assessments} selectedId={selectedId} onSelect={select} userLoc={ref.kind !== 'default' ? ref : null} reason="Simple map selected." />
             : <MapView places={results} assessments={assessments} selectedId={selectedId} onSelect={select} userLoc={ref.kind !== 'default' ? ref : null} onTilesFailed={() => setSimpleMap(true, true)} />}
           <div className="map-overlay map-banner">
-            <span className="chip neutral" style={{ background: '#fff8e6', borderColor: '#ecd49a' }}>Demo dataset</span>
+            <span className="chip neutral" style={{ background: '#fff8e6', borderColor: '#ecd49a' }}>Sourced Pune places</span>
             <button className="btn sm secondary" onClick={() => setSimpleMap(!simple)} aria-pressed={simple}><MapIcon size={15} aria-hidden="true" /> {simple ? 'Try street map' : 'Use simple map'}</button>
-            <button className="btn sm secondary" onClick={demo} disabled={!conflictDemoTarget} title="Adds a report that contradicts a currently consistent lift status">
-              <Zap size={15} aria-hidden="true" /> {conflictDemoTarget ? `Try conflict demo (${conflictDemoTarget.place.name} lift)` : 'Conflict demo applied — reset demo data to repeat'}
-            </button>
           </div>
           <Legend className="map-overlay" />
         </section>
@@ -143,7 +132,6 @@ export default function MapDashboard() {
           <LocationDetails
             place={selected} assessment={assessments[selected.id]} now={now} places={withDistance} assessments={assessments} refLabel={ref.label}
             tab={tab} setTab={setTab} onClose={() => select(null)} onReport={(fid) => goReport(selected.id, fid)}
-            onConflictDemo={() => { const before = assessments[selected.id].byId.lift; const res = runConflictDemo(selected.id); if (res.ok) toast(`Conflict demo: ${selected.name} lift changed from "${before.state === 'accessible' ? 'Accessible' : 'Not accessible'}" to "Needs Recheck".`); else toast(res.error, 'error'); }}
           />
         )}
       </div>

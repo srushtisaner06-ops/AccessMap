@@ -2,14 +2,32 @@
 // replace load/save with calls to a FastAPI + PostgreSQL/PostGIS service
 // (GET/POST /reports, POST /reports/{id}/review) and keep the same shapes.
 
-import { buildSeedReports, buildSeedReviews } from './mockData.js';
-
 const KEY = 'accessmap-ai:v1';
-export const SCHEMA_VERSION = 1;
+const PLACE_CACHE_KEY = 'accessmap-ai:places:v1';
+export const SCHEMA_VERSION = 2;
+
+function validPlace(p) {
+  return p && typeof p.id === 'string' && typeof p.name === 'string' && typeof p.category === 'string'
+    && typeof p.address === 'string' && Number.isFinite(p.lat) && Number.isFinite(p.lng)
+    && Array.isArray(p.features) && typeof p.sourceUrl === 'string';
+}
+
+export function loadCachedPlaces(fallback) {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(PLACE_CACHE_KEY) || 'null');
+    if (parsed && Array.isArray(parsed.places) && parsed.places.every(validPlace)) return parsed;
+  } catch { /* use bundled curated places */ }
+  return { places: fallback, cachedAt: null };
+}
+
+export function cachePlaces(places) {
+  try {
+    window.localStorage.setItem(PLACE_CACHE_KEY, JSON.stringify({ places, cachedAt: new Date().toISOString() }));
+  } catch { /* place cache is best effort */ }
+}
 
 export function freshState(now = Date.now()) {
-  const reports = buildSeedReports(now);
-  return { version: SCHEMA_VERSION, seededAt: now, reports, reviews: buildSeedReviews(reports, now) };
+  return { version: SCHEMA_VERSION, seededAt: now, reports: [], reviews: [] };
 }
 
 function isValidReport(r) {
@@ -28,7 +46,7 @@ export function loadState() {
     const reviews = Array.isArray(parsed.reviews) ? parsed.reviews.filter((x) => x && typeof x.reportId === 'string') : [];
     return { state: { ...parsed, reports, reviews }, error: reports.length !== parsed.reports.length ? 'Some saved reports were malformed and were skipped.' : null, fresh: false };
   } catch (e) {
-    return { state: freshState(), error: 'Saved demo data could not be read, so the sample data was restored.', fresh: true };
+    return { state: freshState(), error: 'Saved report data could not be read, so the empty evidence state was restored.', fresh: true };
   }
 }
 

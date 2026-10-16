@@ -74,7 +74,6 @@ export default function ReportForm() {
         <div className="row">
           <button className="btn" onClick={() => navigate(`/map?place=${report.placeId}`)}>View {p.name} on the map</button>
           <button className="btn secondary" onClick={() => { setResult(null); setPhoto(null); setForm(blank(report.placeId)); }}>Submit another report</button>
-          <button className="btn ghost" onClick={() => navigate('/admin')}>Open admin review (demo)</button>
         </div>
       </div>
     );

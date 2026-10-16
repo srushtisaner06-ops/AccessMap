@@ -1,125 +1,33 @@
-// DEMONSTRATION DATA ONLY. Places and reports below are fictional/illustrative
-// and have NOT been verified in the real world.
+// Curated real Pune places. Place metadata is sourced; accessibility is not
+// inferred from the place source and remains limited until evidence is reported.
 
-const DAY = 86400000;
-const HOUR = 3600000;
+const SOURCE_UPDATED_AT = '2026-10-16';
+const COMMON = ['entrance', 'wheelchair', 'toilet', 'parking', 'signage', 'noise', 'crowd'];
+const HOSPITAL = [...COMMON, 'lift'];
+const COLLEGE = [...COMMON, 'lift'];
+const PUBLIC_FACILITY = [...COMMON, 'lift'];
 
 export const PLACES = [
-  { id: 'cafe-central', name: 'Cafe Central', category: 'Cafe', area: 'Koregaon Park', address: 'Lane 5, Koregaon Park (demo)', lat: 18.5362, lng: 73.894,
-    features: ['entrance', 'wheelchair', 'lift', 'toilet', 'parking', 'signage', 'noise'],
-    blurb: 'Two-floor cafe. Seating upstairs is reached by lift.' },
-  { id: 'city-hospital', name: 'City Hospital', category: 'Hospital', area: 'Deccan', address: 'Main Road, Deccan (demo)', lat: 18.5167, lng: 73.842,
-    features: ['entrance', 'wheelchair', 'lift', 'toilet', 'parking', 'signage', 'noise', 'crowd'],
-    blurb: 'Multi-storey general hospital with OPD and emergency wings.' },
-  { id: 'shivajinagar-library', name: 'Shivajinagar Public Library', category: 'Library', area: 'Shivajinagar', address: 'University Road (demo)', lat: 18.5308, lng: 73.8475,
-    features: ['entrance', 'wheelchair', 'lift', 'toilet', 'parking', 'signage', 'noise'],
-    blurb: 'Public lending library with reading rooms on three floors.' },
-  { id: 'riverside-park', name: 'Riverside Public Park', category: 'Public park', area: 'Kothrud', address: 'Riverside Path (demo)', lat: 18.5074, lng: 73.8077,
-    features: ['entrance', 'wheelchair', 'toilet', 'parking', 'signage', 'crowd'],
-    blurb: 'Landscaped riverside park with walking paths and a children\'s area.' },
-  { id: 'orion-mall', name: 'Orion Shopping Centre', category: 'Shopping centre', area: 'Viman Nagar', address: 'Nagar Road (demo)', lat: 18.5679, lng: 73.9143,
-    features: ['entrance', 'wheelchair', 'lift', 'toilet', 'parking', 'signage', 'noise', 'crowd'],
-    blurb: 'Four-level shopping centre with food court.' },
-  { id: 'aundh-community-centre', name: 'Aundh Community Centre', category: 'Community centre', area: 'Aundh', address: 'Aundh Gaon Road (demo)', lat: 18.558, lng: 73.8075,
-    features: ['entrance', 'wheelchair', 'toilet', 'signage', 'noise'],
-    blurb: 'Neighbourhood hall used for classes, meetings and events.' },
-  { id: 'swargate-metro', name: 'Swargate Metro Concourse', category: 'Transit station', area: 'Swargate', address: 'Swargate (demo)', lat: 18.5018, lng: 73.8636,
-    features: ['entrance', 'lift', 'signage', 'crowd'],
-    blurb: 'Underground station concourse (sample entry).' },
+  { id: 'ruby-hall-clinic', name: 'Ruby Hall Clinic', category: 'Hospital', area: 'Sangamvadi', address: '40, Sassoon Road, Pune 411001', lat: 18.53354, lng: 73.87715, features: HOSPITAL,
+    blurb: 'Multispeciality hospital on Sassoon Road.', sourceName: 'Ruby Hall Clinic', sourceUrl: 'https://rubyhall.com/contact-us/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'deenanath-mangeshkar-hospital', name: 'Deenanath Mangeshkar Hospital', category: 'Hospital', area: 'Erandwane', address: 'Near Mhatre Bridge, Erandwane, Pune 411004', lat: 18.50201, lng: 73.83284, features: HOSPITAL,
+    blurb: 'Hospital and research centre near Mhatre Bridge.', sourceName: 'Deenanath Mangeshkar Hospital', sourceUrl: 'https://www.dmhospital.org/contact-us', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'goodluck-cafe', name: 'Goodluck Cafe', category: 'Cafe', area: 'Deccan Gymkhana', address: '759/75, Goodluck Chowk, Fergusson College Road, Pune 411004', lat: 18.52891, lng: 73.84038, features: COMMON,
+    blurb: 'Historic Irani cafe on Fergusson College Road.', sourceName: 'Goodluck Cafe', sourceUrl: 'https://goodluckcafe.co.in/contact-us/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'vaishali-restaurant', name: 'Vaishali Restaurant', category: 'Cafe', area: 'Shivajinagar', address: '1218, Fergusson College Road, Pune 411004', lat: 18.52916, lng: 73.84073, features: COMMON,
+    blurb: 'Restaurant on Fergusson College Road.', sourceName: 'Vaishali Restaurant', sourceUrl: 'https://www.vaishalihotel.in/reach-us.html', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'fergusson-college', name: 'Fergusson College', category: 'College', area: 'Shivajinagar', address: 'Fergusson College Road, Shivajinagar, Pune 411004', lat: 18.53082, lng: 73.84062, features: COLLEGE,
+    blurb: 'Autonomous college on Fergusson College Road.', sourceName: 'District Pune / Government of Maharashtra', sourceUrl: 'https://pune.gov.in/en/public-utility/fergusson-college/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'symbiosis-college-arts-commerce', name: 'Symbiosis College of Arts and Commerce', category: 'College', area: 'Shivajinagar', address: 'Senapati Bapat Road, Pune 411004', lat: 18.52856, lng: 73.82958, features: COLLEGE,
+    blurb: 'College campus on Senapati Bapat Road.', sourceName: 'Symbiosis College of Arts & Commerce', sourceUrl: 'https://symbiosiscollege.edu.in/contact-us', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'sarasbaug-peshwe-park', name: 'Sarasbaug-Peshwe Park', category: 'Park', area: 'Parvati', address: 'Sarasbaug, Pune, Maharashtra', lat: 18.50196, lng: 73.85819, features: ['entrance', 'wheelchair', 'toilet', 'parking', 'signage', 'crowd'],
+    blurb: 'City park and public recreation space.', sourceName: 'District Pune / Government of Maharashtra', sourceUrl: 'https://pune.gov.in/tourist-place/%E0%A4%B8%E0%A4%BE%E0%A4%B0%E0%A4%B8%E0%A4%AC%E0%A4%BE%E0%A4%97-%E0%A4%AA%E0%A5%87%E0%A4%B6%E0%A4%B5%E0%A5%87-%E0%A4%AA%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%95/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'empress-botanical-garden', name: 'Empress Botanical Garden', category: 'Park', area: 'Camp', address: 'Near Race Course, Kavade Mala, Camp, Pune 411001', lat: 18.50188, lng: 73.89726, features: ['entrance', 'wheelchair', 'toilet', 'parking', 'signage', 'crowd'],
+    blurb: 'Botanical garden near the Pune Race Course.', sourceName: 'Empress Botanical Garden', sourceUrl: 'https://treesofempressgardenpune.in/contact/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'pune-municipal-corporation', name: 'Pune Municipal Corporation', category: 'Public facility', area: 'Shivajinagar', address: 'PMC Main Building, Congress House Road, Pune 411005', lat: 18.52874, lng: 73.85193, features: PUBLIC_FACILITY,
+    blurb: 'Civic administration building and public service facility.', sourceName: 'District Pune / Government of Maharashtra', sourceUrl: 'https://pune.gov.in/en/public-utility-category/municipality/', sourceUpdatedAt: SOURCE_UPDATED_AT },
+  { id: 'pune-junction-railway-station', name: 'Pune Junction Railway Station', category: 'Public facility', area: 'Agarkar Nagar', address: 'HH Prince Aga Khan Road, Agarkar Nagar, Pune', lat: 18.5288, lng: 73.87447, features: PUBLIC_FACILITY,
+    blurb: 'Major railway station serving Pune.', sourceName: 'Central Railway / OpenStreetMap location search', sourceUrl: 'https://www.openstreetmap.org/search?query=Pune%20Junction%20Railway%20Station', sourceUpdatedAt: SOURCE_UPDATED_AT },
 ];
 
 export const PLACE_BY_ID = Object.fromEntries(PLACES.map((p) => [p.id, p]));
-
-// [placeId, featureId, status, daysAgo, photo?, description, reviewState?]
-const SEED_ROWS = [
-  // ---- Cafe Central (scripted demo scenario) ----
-  ['cafe-central', 'entrance', 'accessible', 2, true, 'Flat entrance, wide automatic door. No steps from pavement.'],
-  ['cafe-central', 'entrance', 'accessible', 40, false, 'Ramp at side was not needed, entrance is level.', 'reviewed'],
-  ['cafe-central', 'lift', 'accessible', 5, true, 'Lift worked fine, buttons at wheelchair height.'],
-  ['cafe-central', 'lift', 'not_accessible', 3, false, 'Out-of-order sign on the lift; staff said repair is pending.'],
-  ['cafe-central', 'lift', 'accessible', 70, false, '', 'reviewed'],
-  ['cafe-central', 'toilet', 'accessible', 21, false, 'Accessible toilet at the back, door wide enough for a wheelchair.'],
-  ['cafe-central', 'wheelchair', 'accessible', 12, false, 'Tables on ground floor are spaced out; easy to move around.'],
-  ['cafe-central', 'parking', 'unable', 30, false, 'Could not tell which bays are reserved.'],
-  ['cafe-central', 'signage', 'accessible', 60, false, ''],
-  ['cafe-central', 'noise', 'not_accessible', 9, false, 'Very loud at lunchtime with music and espresso machine.'],
-
-  // ---- City Hospital ----
-  ['city-hospital', 'entrance', 'accessible', 4, true, 'Ramp and level entrance at main gate.'],
-  ['city-hospital', 'entrance', 'accessible', 20, false, 'Main entrance step-free.', 'reviewed'],
-  ['city-hospital', 'wheelchair', 'accessible', 6, true, 'Wide corridors, wheelchairs available at reception.'],
-  ['city-hospital', 'lift', 'accessible', 3, true, 'Both lifts working, voice announcements present.'],
-  ['city-hospital', 'lift', 'accessible', 9, false, 'Used the lift to reach OPD, no issues.'],
-  ['city-hospital', 'toilet', 'accessible', 7, true, 'Accessible toilet on each floor, grab rails fitted.'],
-  ['city-hospital', 'parking', 'accessible', 15, false, 'Two reserved bays near the entrance.'],
-  ['city-hospital', 'signage', 'accessible', 30, false, 'Large colour-coded signs, easy to follow.'],
-  ['city-hospital', 'noise', 'not_accessible', 5, false, 'Noisy waiting area during OPD hours.'],
-  ['city-hospital', 'crowd', 'not_accessible', 2, false, 'Long queue at the entrance in the morning.'],
-
-  // ---- Shivajinagar Public Library ----
-  ['shivajinagar-library', 'entrance', 'accessible', 95, false, 'Short ramp at the entrance; gentle slope.'],
-  ['shivajinagar-library', 'wheelchair', 'accessible', 25, false, 'Reading room aisles are wide enough.'],
-  ['shivajinagar-library', 'lift', 'accessible', 14, true, 'Lift to all floors working.'],
-  ['shivajinagar-library', 'toilet', 'accessible', 30, true, 'Accessible toilet on ground floor.'],
-  ['shivajinagar-library', 'parking', 'accessible', 200, false, 'Bay near the gate.'],
-  ['shivajinagar-library', 'signage', 'accessible', 20, true, 'Large-print signs.'],
-  ['shivajinagar-library', 'noise', 'accessible', 10, false, 'Quiet throughout.', 'reviewed'],
-
-  // ---- Riverside Public Park ----
-  ['riverside-park', 'entrance', 'accessible', 14, false, 'Main gate is level, no steps.'],
-  ['riverside-park', 'wheelchair', 'accessible', 18, false, 'Paved main loop is smooth and wide.'],
-  ['riverside-park', 'wheelchair', 'not_accessible', 8, true, 'Gravel on the river-side path; difficult for wheelchairs.'],
-  ['riverside-park', 'toilet', 'unable', 20, false, 'Toilet block was closed when I visited.'],
-  ['riverside-park', 'crowd', 'accessible', 4, false, 'Quiet on a weekday morning.'],
-
-  // ---- Orion Shopping Centre ----
-  ['orion-mall', 'entrance', 'accessible', 6, true, 'Automatic doors, level entry.'],
-  ['orion-mall', 'entrance', 'accessible', 11, true, 'No steps at the main entrance.'],
-  ['orion-mall', 'wheelchair', 'accessible', 11, false, 'Wide aisles on ground and first floor.'],
-  ['orion-mall', 'lift', 'accessible', 4, true, 'Lifts working, large buttons.'],
-  ['orion-mall', 'lift', 'accessible', 6, false, 'Used lifts to reach food court.'],
-  ['orion-mall', 'toilet', 'not_accessible', 10, true, 'Accessible toilet was locked and used as storage.'],
-  ['orion-mall', 'toilet', 'not_accessible', 25, false, 'Key must be fetched from security; very slow.'],
-  ['orion-mall', 'parking', 'accessible', 8, false, 'Bays near the lift lobby.'],
-  ['orion-mall', 'crowd', 'not_accessible', 3, false, 'Weekend crowds at the entrance.'],
-  ['orion-mall', 'noise', 'not_accessible', 12, false, 'Loud announcements in the atrium.'],
-
-  // ---- Aundh Community Centre (mostly outdated) ----
-  ['aundh-community-centre', 'entrance', 'accessible', 150, false, ''],
-  ['aundh-community-centre', 'toilet', 'accessible', 130, false, 'Toilet looked accessible.'],
-  ['aundh-community-centre', 'signage', 'not_accessible', 40, false, 'Hall numbers hard to read.'],
-
-  // ---- Swargate Metro Concourse (sparse) ----
-  ['swargate-metro', 'entrance', 'accessible', 20, false, 'Escalator and ramp at the north entrance.'],
-  ['swargate-metro', 'signage', 'accessible', 33, false, ''],
-];
-
-// Hours of the day (before "now") used so seed visits don't all land at the same clock time.
-const HOUR_JITTER = [2, 5, 3, 7, 1, 6, 4, 8];
-
-export function buildSeedReports(now = Date.now()) {
-  return SEED_ROWS.map((row, i) => {
-    const [placeId, featureId, status, daysAgo, photo, description, review] = row;
-    const visitedAt = now - daysAgo * DAY - HOUR_JITTER[i % HOUR_JITTER.length] * HOUR;
-    return {
-      id: `r-seed-${String(i + 1).padStart(3, '0')}`,
-      placeId, featureId, status,
-      visitedAt,
-      submittedAt: visitedAt + 3 * HOUR,
-      description: description || '',
-      photo: photo ? { sample: true, caption: 'Sample photo (illustrative placeholder, not a real photograph)' } : null,
-      source: 'seed',
-      reviewState: review || 'pending',
-      reviewReason: '',
-    };
-  });
-}
-
-export function buildSeedReviews(reports, now = Date.now()) {
-  return reports
-    .filter((r) => r.reviewState === 'reviewed')
-    .map((r, i) => ({
-      id: `rv-seed-${i + 1}`, reportId: r.id, decision: 'reviewed', reason: 'Seed data: marked reviewed for the demo.',
-      reviewer: 'Demo admin', at: r.submittedAt + DAY,
-    }));
-}

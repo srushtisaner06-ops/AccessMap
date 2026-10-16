@@ -7,7 +7,9 @@ import Legend from '../components/Legend.jsx';
 
 export default function LandingPage() {
   const { assessments, places } = useStore();
-  const preview = ['cafe-central', 'city-hospital', 'orion-mall'].map((id) => ({ p: places.find((x) => x.id === id), a: assessments[id] }));
+  const preview = places.slice(0, 3)
+    .map((p) => ({ p, a: assessments[p.id] }))
+    .filter(({ p, a }) => p && a);
   return (
     <div className="page">
       <section className="hero" aria-labelledby="hero-h">
@@ -19,10 +21,10 @@ export default function LandingPage() {
             <button className="btn lg" onClick={() => navigate('/map')}>Explore Accessibility Map <ArrowRight size={18} aria-hidden="true" /></button>
             <button className="btn lg secondary" onClick={() => navigate('/report')}><Flag size={18} aria-hidden="true" /> Report a Barrier</button>
           </div>
-          <div className="notice"><Info size={18} aria-hidden="true" /><span className="small">Trust status reflects available evidence and does not guarantee that a facility is currently accessible. This prototype uses fictional demonstration data for Pune.</span></div>
+          <div className="notice"><Info size={18} aria-hidden="true" /><span className="small">Places come from public listings. Trust status reflects only available evidence and does not guarantee that a facility is currently accessible.</span></div>
         </div>
         <div className="preview" aria-label="Preview of map results">
-          <div style={{ background: 'linear-gradient(135deg,#dbe8f5,#eef5fb)', padding: 14, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}><MapPin size={18} aria-hidden="true" /> Pune · demo preview</div>
+          <div style={{ background: 'linear-gradient(135deg,#dbe8f5,#eef5fb)', padding: 14, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}><MapPin size={18} aria-hidden="true" /> Pune · sourced places</div>
           <div className="preview-body">
             {preview.map(({ p, a }) => (
               <div className="preview-item" key={p.id}>

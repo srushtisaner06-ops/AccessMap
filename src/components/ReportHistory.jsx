@@ -4,7 +4,7 @@ import { FEATURE_BY_ID, describeStatus } from '../lib/features.js';
 import { relTime, absDate } from '../lib/format.js';
 import { ReviewChip, Photo } from './TrustBadge.jsx';
 
-const SOURCE = { seed: 'Sample data', community: 'Community report (unverified)', demo: 'Demo-generated report' };
+const SOURCE = { community: 'Community report (unverified)' };
 
 export function ReportItem({ report, now, conflict = false, showFeature = false }) {
   const f = FEATURE_BY_ID[report.featureId];

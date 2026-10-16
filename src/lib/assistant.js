@@ -64,7 +64,7 @@ export function answer(question, ctx) {
 
   // Nearby / which places have X
   if (/(which|what|any|list|find).*(place|nearby|near|have|has|with)/.test(q) || q.includes('nearby') || q.includes('near me')) {
-    if (!featureId) return { text: 'Tell me which feature you need (entrance, lift, toilet, wheelchair access, parking, signage, noise, crowd) and I will list places from the demo dataset.', sources: [] };
+    if (!featureId) return { text: 'Tell me which feature you need (entrance, lift, toilet, wheelchair access, parking, signage, noise, crowd) and I will list places from the sourced Pune place list.', sources: [] };
     const f = FEATURE_BY_ID[featureId];
     const rows = places.filter((p) => p.features.includes(featureId)).map((p) => ({ p, a: assessments[p.id].byId[featureId], d: p.distanceKm }))
       .sort((x, y) => (x.d ?? 99) - (y.d ?? 99));

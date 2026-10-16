@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { loadState, saveState, freshState, clearState } from './storage.js';
-import { PLACES, PLACE_BY_ID } from './mockData.js';
+import { loadState, saveState, freshState, clearState, loadCachedPlaces, cachePlaces } from './storage.js';
+import { PLACES } from './mockData.js';
 import { assessAll, assessFeature } from './trustEngine.js';
 import { validateReportInput } from './validation.js';
 
@@ -12,6 +12,8 @@ let toastId = 0;
 export function StoreProvider({ children }) {
   const initial = useRef(null);
   if (!initial.current) initial.current = loadState();
+  const placeCache = useRef(loadCachedPlaces(PLACES));
+  const places = placeCache.current.places;
   const [state, setState] = useState(initial.current.state);
   const [storageError, setStorageError] = useState(initial.current.error);
   const [toasts, setToasts] = useState([]);
@@ -24,8 +26,9 @@ export function StoreProvider({ children }) {
     const res = saveState(state);
     setStorageError(res.ok ? null : res.error);
   }, [state]);
-  // Save the initial seed once so "reload keeps data" holds even before any edit
+  // Save the initial empty report state once so reload persistence is established.
   useEffect(() => { if (initial.current.fresh) saveState(initial.current.state); }, []);
+  useEffect(() => { cachePlaces(PLACES); }, []);
 
   // Keep freshness current while the tab is open and sync across tabs
   useEffect(() => {
@@ -36,7 +39,7 @@ export function StoreProvider({ children }) {
   }, []);
 
   const now = tick;
-  const assessments = useMemo(() => assessAll(PLACES, state.reports, now), [state.reports, now]);
+  const assessments = useMemo(() => assessAll(places, state.reports, now), [places, state.reports, now]);
 
   const toast = useCallback((message, kind = 'success') => {
     const id = ++toastId;
@@ -79,28 +82,6 @@ export function StoreProvider({ children }) {
     return { ok: true };
   }, []);
 
-  /** Adds a conflicting report to the first place whose lift is currently consistent. */
-  const conflictDemoTarget = useMemo(() => {
-    const order = ['city-hospital', ...PLACES.map((p) => p.id)];
-    for (const id of order) {
-      const p = PLACE_BY_ID[id]; const a = assessments[id]?.byId?.lift;
-      if (p?.features.includes('lift') && a && (a.state === 'accessible' || a.state === 'not_accessible')) return { place: p, assessment: a };
-    }
-    return null;
-  }, [assessments]);
-
-  const runConflictDemo = useCallback((placeId) => {
-    const target = placeId ? { place: PLACE_BY_ID[placeId], assessment: assessments[placeId]?.byId?.lift } : conflictDemoTarget;
-    if (!target?.place || !target.assessment || !['accessible', 'not_accessible'].includes(target.assessment.state)) return { ok: false, error: 'No place with a consistent lift status is available. Reset demo data to repeat the demo.' };
-    const opposite = target.assessment.state === 'accessible' ? 'not_accessible' : 'accessible';
-    const res = addReport({
-      placeId: target.place.id, featureId: 'lift', status: opposite, visitedAt: Date.now() - 60000,
-      description: 'Demo-generated report added by the "Try conflict demo" control to illustrate conflict detection.',
-      confirmed: true, source: 'demo',
-    });
-    return { ...res, place: target.place };
-  }, [assessments, conflictDemoTarget, addReport]);
-
   const resetDemo = useCallback(() => {
     clearState();
     const s = freshState();
@@ -109,10 +90,10 @@ export function StoreProvider({ children }) {
   }, []);
 
   const value = useMemo(() => ({
-    places: PLACES, reports: state.reports, reviews: state.reviews, assessments, now,
-    addReport, reviewReport, runConflictDemo, conflictDemoTarget, resetDemo,
+    places, reports: state.reports, reviews: state.reviews, assessments, now,
+    addReport, reviewReport, resetDemo,
     toast, toasts, dismissToast, storageError, dismissStorageError: () => setStorageError(null),
-  }), [state, assessments, now, addReport, reviewReport, runConflictDemo, conflictDemoTarget, resetDemo, toast, toasts, dismissToast, storageError]);
+  }), [state, assessments, now, addReport, reviewReport, resetDemo, toast, toasts, dismissToast, storageError]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
