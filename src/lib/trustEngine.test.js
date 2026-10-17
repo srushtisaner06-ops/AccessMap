@@ -75,7 +75,7 @@ test('demo dataset has 20 places and deterministic seeded reports', () => {
   const first = buildSeedReports();
   const second = buildSeedReports();
   assert.equal(PLACES.length, 20);
-  assert.equal(first.length, 35);
+  assert.equal(first.length, 42);
   assert.deepEqual(first, second);
   assert.ok(first.every((r) => r.source === 'demo' && r.id.startsWith('r-demo-')));
 });
